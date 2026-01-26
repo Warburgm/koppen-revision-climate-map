@@ -20,19 +20,19 @@ and introduces refined distinctions within mid-latitude, subtropical, and tropic
 
 The result is a classification that is both physically interpretable and globally reproducible.
 
-Key Features
+Key Features:
 
-🌍 Global coverage (land points only)
+Global coverage (land points only)
 
-🧮 Fully vectorized, reproducible Python implementation
+Fully vectorized, reproducible Python implementation
 
-🌡 Temperature metrics derived from monthly and annual means
+Temperature metrics derived from monthly and annual means
 
-🌧 Precipitation seasonality and aridity thresholds based on energy balance logic
+Precipitation seasonality and aridity thresholds based on energy balance logic and ecosystem distribution
 
-🏔 Explicit treatment of continentality, oceanicity, and subtropical transitions
+Explicit treatment of continentality, oceanicity, and subtropical transitions
 
-📊 Designed for analysis, not just visualization
+Designed for analysis, not just visualization
 
 Data Sources
 
@@ -40,7 +40,7 @@ All calculations are based on ERA5 reanalysis products:
 
 Variable	Description	Temporal Resolution
 t	Near-surface air temperature	Monthly mean
-tx	Daily maximum temperature (aggregated)	Monthly
+tx	Daily maximum temperature (aggregated) Monthly
 pr	Total precipitation	Monthly
 
 Period: 1991–2020
@@ -73,7 +73,7 @@ polar, subpolar, mid-latitude, subtropical, and tropical regimes,
 
 continental vs oceanic behavior,
 
-hypercontinental extremes.
+hypercontinental extremes (to isolate and correct certain ERA5 precipitation biases).
 
 Moisture Regimes
 
@@ -99,15 +99,13 @@ The classification includes 26 distinct climate types, grouped broadly as:
 
 Polar & Subpolar
 
-Continental Mid-Latitude
+Continental Temperate
 
 Oceanic Temperate
 
 Semi-Arid & Desert
 
-Mediterranean
-
-Subtropical (humid, monsoonal, oceanic, highland)
+Subtropical (humid, monsoonal, oceanic, highland, mediterranean)
 
 Tropical (savanna, monsoon forest, rainforest)
 
@@ -165,8 +163,6 @@ educational and teaching use
 climate regime diagnostics
 
 alternative baselines for impact studies
-
-It is not intended to replace operational climate services.
 
 License
 
