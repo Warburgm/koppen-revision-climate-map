@@ -38,10 +38,7 @@ Data Sources
 
 All calculations are based on ERA5 reanalysis products:
 
-Variable	Description	Temporal Resolution
-t	Near-surface air temperature	Monthly mean
-tx	Daily maximum temperature (aggregated) Monthly
-pr	Total precipitation	Monthly
+Variable Description Temporal Resolution t Near-surface air temperature Monthly mean tx Daily maximum temperature (aggregated) Monthly pr Total precipitation Monthly
 
 Period: 1991–2020
 
@@ -69,7 +66,7 @@ number of thermally “active” months.
 
 This allows explicit separation of:
 
-polar, subpolar, mid-latitude, subtropical, and tropical regimes,
+cold/polar, mid-latitude, and tropical regimes,
 
 continental vs oceanic behavior,
 
@@ -99,13 +96,11 @@ The classification includes 22 distinct climate types, grouped broadly as:
 
 Polar & Subpolar
 
-Continental Temperate
+Wet Summer Temperate
 
-Oceanic Temperate
+Dry Summer Temperate
 
-Semi-Arid & Desert
-
-Subtropical (mediterranean, humid)
+Semi-Arid & Desert (temperate & tropical)
 
 Tropical (monsoon savanna, rainforest)
 
@@ -121,8 +116,7 @@ an accompanying high-resolution global map visualization
 
 Example output:
 
-Improvement on Köppen Climate Classification (1991–2020 Averages)
-(ERA5 reanalysis, 0.1° resolution)
+Improvement on Köppen Climate Classification (1991–2020 Averages) (ERA5 reanalysis, 0.1° resolution)
 
 Reproducibility
 
@@ -140,17 +134,7 @@ Visualize using Cartopy
 
 No machine learning or tuning against external maps is performed.
 
-Repository Structure (planned)
-.
-├── src/
-│   ├── classify.py        # climate classification logic
-│   ├── metrics.py         # climatological calculations
-│   └── plot.py            # visualization utilities
-├── notebooks/
-│   └── exploration.ipynb
-├── README.md
-├── environment.yml
-└── .gitignore
+Repository Structure (planned) . ├── src/ │ ├── classify.py # climate classification logic │ ├── metrics.py # climatological calculations │ └── plot.py # visualization utilities ├── notebooks/ │ └── exploration.ipynb ├── README.md ├── environment.yml └── .gitignore
 
 Intended Use
 
@@ -186,5 +170,4 @@ If you use this work, please cite the repository and acknowledge ERA5 as the und
 
 Status
 
-Active development
-Initial public release forthcoming.
+Active development Initial public release forthcoming.
