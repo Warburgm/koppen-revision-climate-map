@@ -16,7 +16,7 @@ uses internally consistent thermal and hydrologic metrics,
 
 explicitly resolves continentality, seasonality, and aridity regimes,
 
-and introduces refined distinctions within mid-latitude, subtropical, and tropical climates.
+and introduces refined distinctions within mid-latitude and tropical climates.
 
 The result is a classification that is both physically interpretable and globally reproducible.
 
@@ -95,7 +95,7 @@ continental amplification.
 
 Climate Classes
 
-The classification includes 26 distinct climate types, grouped broadly as:
+The classification includes 22 distinct climate types, grouped broadly as:
 
 Polar & Subpolar
 
@@ -105,9 +105,9 @@ Oceanic Temperate
 
 Semi-Arid & Desert
 
-Subtropical (humid, monsoonal, oceanic, highland, mediterranean)
+Subtropical (mediterranean, humid)
 
-Tropical (savanna, monsoon forest, rainforest)
+Tropical (monsoon savanna, rainforest)
 
 Each grid cell is assigned exactly one class, with logical safeguards preventing physically inconsistent combinations.
 
