@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import xarray as xr
 import regionmask
@@ -8,11 +9,21 @@ from climateclass.plotting import quick_plot
 
 
 def main():
-    t_path = "/Users/warburgm/t.nc"
-    pr_path = "/Users/warburgm/pr.nc"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--t", required=True, help="Path to temperature NetCDF")
+    parser.add_argument("--pr", required=True, help="Path to precipitation NetCDF")
+    parser.add_argument(
+        "--out",
+        default="global_climate_types_1991_2020.png",
+        help="Output figure filename",
+    )
+    args = parser.parse_args()
+
+    t_path = Path(args.t)
+    pr_path = Path(args.pr)
 
     for p in [t_path, pr_path]:
-        assert Path(p).exists(), f"Missing file: {p}"
+        assert p.exists(), f"Missing file: {p}"
 
     t = xr.open_dataset(
         t_path,
@@ -34,7 +45,6 @@ def main():
 
     classification_idx = classification_to_index(classification, LABELS)
 
-    # Keep ocean masking explicit in the runner
     lon = classification_idx.lon.values
     lat = classification_idx.lat.values
     landmask = regionmask.defined_regions.natural_earth_v5_0_0.land_110.mask(lon, lat)
@@ -45,7 +55,7 @@ def main():
         classification_idx=classification_idx,
         legend_items=LEGEND_ITEMS,
         cbar_labels=CBAR_LABELS,
-        outfile="global_climate_types_1991_2020.png",
+        outfile=args.out,
     )
 
 
