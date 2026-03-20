@@ -6,6 +6,7 @@
 *.grib
 *.grb
 *.zarr
+*.ipynb
 
 # Figures (generated)
 *.png
