@@ -38,7 +38,7 @@ Data Sources
 
 All calculations are based on ERA5 reanalysis products:
 
-Variable Description Temporal Resolution t Near-surface air temperature Monthly mean tx Daily maximum temperature (aggregated) Monthly pr Total precipitation Monthly
+Variable Description Temporal Resolution t Near-surface air temperature Monthly mean Monthly pr Total precipitation Monthly
 
 Period: 1991–2020
 
@@ -169,3 +169,5 @@ Citation
 If you use this work, please cite the repository and acknowledge ERA5 as the underlying data source.
 
 Status
+
+Active development Initial public release forthcoming.
