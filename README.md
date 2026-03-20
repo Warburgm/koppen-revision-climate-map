@@ -169,5 +169,3 @@ Citation
 If you use this work, please cite the repository and acknowledge ERA5 as the underlying data source.
 
 Status
-
-Active development Initial public release forthcoming.
