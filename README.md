@@ -1,158 +1,207 @@
-# Koppen Climate Map Revision Proposal
+# Köppen Climate Map Revision
 
-Köppen Revision Climate Map
+*A physically motivated global climate classification derived from ERA5 reanalysis (1991–2020).*
 
-A physically motivated global climate classification derived from ERA5 reanalysis (1991–2020).
-
-Overview
+## Overview
 
 This repository contains a revised global climate classification system inspired by the Köppen–Geiger framework, but rebuilt from first principles using modern reanalysis data and explicit thermodynamic and precipitation thresholds.
 
 Unlike traditional Köppen maps, which rely on station climatologies and discrete empirical rules, this system:
 
-operates on gridded ERA5 reanalysis at 0.1° resolution,
-
-uses internally consistent thermal and hydrologic metrics,
-
-explicitly resolves continentality, seasonality, and aridity regimes,
-
-and introduces refined distinctions within mid-latitude and tropical climates.
+- operates on gridded ERA5 reanalysis at 0.1° resolution,
+- uses internally consistent thermal and hydrologic metrics,
+- explicitly resolves continentality, seasonality, and aridity regimes,
+- introduces refined distinctions within mid-latitude and tropical climates.
 
 The result is a classification that is both physically interpretable and globally reproducible.
 
-Key Features:
+## Key Features
 
-Global coverage (land points only)
+- Global coverage (land points only)
+- Fully vectorized, reproducible Python implementation
+- Temperature metrics derived from monthly and annual means
+- Precipitation seasonality and aridity thresholds based on energy balance logic and ecosystem distribution
+- Explicit treatment of continentality, oceanicity, and subtropical transitions
+- Designed for analysis, not just visualization
 
-Fully vectorized, reproducible Python implementation
-
-Temperature metrics derived from monthly and annual means
-
-Precipitation seasonality and aridity thresholds based on energy balance logic and ecosystem distribution
-
-Explicit treatment of continentality, oceanicity, and subtropical transitions
-
-Designed for analysis, not just visualization
-
-Data Sources
+## Data Sources
 
 All calculations are based on ERA5 reanalysis products:
 
-Variable Description Temporal Resolution t Near-surface air temperature Monthly mean Monthly pr Total precipitation Monthly
+| Variable | Description | Temporal Resolution |
+|----------|------------|---------------------|
+| `t`      | Near-surface air temperature | Monthly mean |
+| `pr`     | Total precipitation | Monthly mean |
 
-Period: 1991–2020
-
-Spatial resolution: 0.1° × 0.1°
-
-Units converted internally where required
+- Period: **1991–2020**
+- Spatial resolution: **0.1° × 0.1°**
+- Units are converted internally where required
 
 ERA5 is produced by ECMWF and provides globally consistent, physically constrained atmospheric fields.
 
-Climate Classification Philosophy
+## Climate Classification Philosophy
 
-This system preserves the conceptual spirit of Köppen, while revising its implementation:
+This system preserves the conceptual spirit of Köppen while revising its implementation.
 
-Thermal Regimes
+## Thermal Regimes
 
-Defined using:
+Thermal regimes are defined using:
 
-annual mean temperature,
-
-warmest and coldest month means,
-
-seasonal thermal range,
-
-number of thermally “active” months.
+- annual mean temperature,
+- warmest and coldest month means,
+- seasonal thermal range,
+- number of thermally active months.
 
 This allows explicit separation of:
 
-cold/polar, mid-latitude, and tropical regimes,
+- cold/polar, mid-latitude, and tropical regimes,
+- continental vs. oceanic behavior,
+- hypercontinental extremes (including corrections for certain ERA5 precipitation artifacts).
 
-continental vs oceanic behavior,
+## Moisture Regimes
 
-hypercontinental extremes (to isolate and correct certain ERA5 precipitation biases).
+Moisture regimes are defined using:
 
-Moisture Regimes
-
-Defined using:
-
-climatological annual precipitation,
-
-seasonal precipitation partitioning,
-
-temperature-scaled aridity thresholds.
+- climatological annual precipitation,
+- seasonal precipitation partitioning,
+- temperature-scaled aridity thresholds.
 
 Aridity thresholds are vectorized functions of mean temperature, with regime-dependent offsets to account for:
 
-tropical convection dominance,
+- tropical convection dominance,
+- winter-dominant precipitation,
+- continental amplification.
 
-winter-dominant precipitation,
+## Climate Classes
 
-continental amplification.
+The classification currently includes **22 distinct climate types**, grouped broadly as:
 
-Climate Classes
+- Polar & Subpolar  
+- Wet Summer Temperate  
+- Dry Summer Temperate  
+- Semi-Arid & Desert (temperate and tropical)  
+- Tropical (monsoon savanna, rainforest)
 
-The classification includes 22 distinct climate types, grouped broadly as:
+Each grid cell is assigned exactly one class, with logical safeguards to prevent physically inconsistent combinations.
 
-Polar & Subpolar
+## Output
 
-Wet Summer Temperate
+The primary outputs are:
 
-Dry Summer Temperate
+- a global gridded classification field (`xarray.DataArray`)
+- a high-resolution global map visualization
 
-Semi-Arid & Desert (temperate & tropical)
-
-Tropical (monsoon savanna, rainforest)
-
-Each grid cell is assigned exactly one class, with logical safeguards preventing physically inconsistent combinations.
-
-Output
-
-The primary output is:
-
-a global gridded classification field (xarray DataArray)
-
-an accompanying high-resolution global map visualization
-
-Example output:
-
-Improvement on Köppen Climate Classification (1991–2020 Averages) (ERA5 reanalysis, 0.1° resolution)
-
-Reproducibility
+## Reproducibility
 
 The workflow is fully deterministic:
 
-Load ERA5 reanalysis fields
-
-Compute climatological metrics
-
-Apply logical classification rules
-
-Map classes to labeled indices
-
-Visualize using Cartopy
+1. Load ERA5 reanalysis fields  
+2. Compute climatological metrics  
+3. Apply logical classification rules  
+4. Map classes to labeled indices  
+5. Visualize using Cartopy  
 
 No machine learning or tuning against external maps is performed.
 
-Repository Structure (planned) . ├── src/ │ ├── classify.py # climate classification logic │ ├── metrics.py # climatological calculations │ └── plot.py # visualization utilities ├── notebooks/ │ └── exploration.ipynb ├── README.md ├── environment.yml └── .gitignore
+## Repository Structure
 
-Intended Use
+.
+├── src/
+│   └── climateclass/
+│       ├── __init__.py
+│       ├── classify.py
+│       ├── palette.py
+│       └── plotting.py
+├── scripts/
+│   └── run_global.py
+├── notebooks/
+├── README.md
+├── environment.yml
+├── LICENSE
+└── .gitignore
+
+## Intended Use
 
 This project is intended for:
 
-climate analysis and comparison studies
+- climate analysis and comparison studies  
+- educational and teaching use  
+- climate regime diagnostics  
+- alternative baselines for impact studies  
 
-educational and teaching use
+## Data Requirements
 
-climate regime diagnostics
+This workflow expects two NetCDF files:
 
-alternative baselines for impact studies
+- `t.nc` — monthly mean near-surface air temperature  
+- `pr.nc` — monthly mean precipitation rate  
 
-License
+## Expected variable names
+
+The files must contain:
+
+- temperature variable named `t`  
+- precipitation variable named `pr`  
+
+## Expected dimensions
+
+Both datasets should share compatible dimensions and coordinates, typically:
+
+- `time`  
+- `lat`  
+- `lon`  
+
+## Expected units
+
+- `t`: degrees Celsius  
+- `pr`: mean precipitation rate in `mm/day` or equivalent `kg m^-2 day^-1`  
+
+The script converts precipitation rates to monthly totals internally using the number of days in each month.
+
+## Time period used in the current workflow
+
+The current implementation slices the data to:
+
+- **1991-01-01 to 2020-12-31**
+
+## Spatial coverage
+
+The workflow is designed for gridded global or near-global datasets on a regular latitude–longitude grid.
+
+## Data Availability
+
+Raw climate input files are not included in this repository.
+
+Users must provide their own NetCDF input files matching the required structure and variable names.
+
+This project was developed using high-resolution ERA5 reanalysis-based temperature and precipitation climatologies.
+
+## Usage 
+
+1. Create the environment
+   
+conda env create -f environment.yml
+conda activate climateclass
+
+2. Run the global classification workflow
+   
+From the repository root:
+
+PYTHONPATH=src python scripts/run_global.py \
+  --t /path/to/t.nc \
+  --pr /path/to/pr.nc
+
+## Reproducibility Note
+
+Because raw NetCDF inputs are not bundled with the repository, exact reproduction of the published map requires access to equivalent source datasets, preprocessing choices, and variable definitions.
+
+The codebase is designed to make the classification logic fully transparent and reusable.
+
+## License
 
 This project is released under the MIT License.
 
-Acknowledgements
+## Acknowledgements
 
 Inspired by:
 
@@ -160,14 +209,15 @@ Wladimir Köppen
 
 Köppen–Geiger climatologies
 
-Modern reanalysis-based climate diagnostics
+modern reanalysis-based climate diagnostics
 
 ERA5 data © ECMWF.
 
-Citation
+## Citation
 
 If you use this work, please cite the repository and acknowledge ERA5 as the underlying data source.
 
-Status
+## Status
 
-Active development Initial public release forthcoming.
+Active development
+Initial public release forthcoming.
