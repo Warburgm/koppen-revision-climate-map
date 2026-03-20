@@ -1,0 +1,15 @@
+name: climateclass
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - xarray
+  - dask
+  - netcdf4
+  - bottleneck
+  - matplotlib
+  - cartopy
+  - shapely
+  - regionmask
+  - pytest
