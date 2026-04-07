@@ -80,13 +80,13 @@ def compute_regimes(metrics: dict, latbands: dict) -> dict:
 
     pole_of_32 = latbands["pole_of_32"]
 
-    continental = (warmest_month_avg_mean - coldest_month_avg_mean >= 22)
-    hypercontinental = (
-        (coldest_month_avg_mean < 0)
-        & (avg_mean < 10)
-        & (warmest_month_avg_mean - coldest_month_avg_mean >= 26)
-    )
-    oceanic = (warmest_month_avg_mean - coldest_month_avg_mean < 22)
+    continental = ((warmest_month - coldest_month) >= 20)
+    oceanic = ((warmest_month - coldest_month) < 20)
+    wcontinental = ((warmest_month - coldest_month) >= 22)
+    woceanic = ((warmest_month - coldest_month) < 22)
+    dcontinental = ((warmest_month - coldest_month) >= 18)
+    doceanic = ((warmest_month - coldest_month) < 18)
+    hypercontinental = (coldest_month_avg_mean < 0) & (avg_mean < 10) & (warmest_month_avg_mean - coldest_month_avg_mean >= 26)
 
     polar = (grow_months < 3) | (mild_months == 0)
     subpolar = (mild_months >= 1) & (grow_months >= 3) & (mild_months < 4)
@@ -129,6 +129,10 @@ def compute_regimes(metrics: dict, latbands: dict) -> dict:
         "continental": continental,
         "hypercontinental": hypercontinental,
         "oceanic": oceanic,
+        "dcontinental": dcontinental,
+        "wcontinental": wcontinental,
+        "woceanic": woceanic,
+        "doceanic": doceanic,
         "polar": polar,
         "subpolar": subpolar,
         "midlat": midlat,
@@ -141,6 +145,10 @@ def compute_regimes(metrics: dict, latbands: dict) -> dict:
         "continental_da": continental_da,
         "hypercontinental_da": hypercontinental_da,
         "oceanic_da": oceanic_da,
+        "wcontinental_da": wcontinental_da,
+        "dcontinental_da": dcontinental_da,
+        "woceanic_da": woceanic_da,
+        "doceanic_da": doceanic_da,
         "mild_da": mild_da,
         "winter_dominant": winter_dominant,
         "precip_threshold": precip_threshold,
@@ -169,6 +177,10 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     tropical_da = regimes["tropical_da"]
     continental_da = regimes["continental_da"]
     oceanic_da = regimes["oceanic_da"]
+    wcontinental_da = regimes["wcontinental_da"]
+    woceanic_da = regimes["woceanic_da"]
+    dcontinental_da = regimes["dcontinental_da"]
+    doceanic_da = regimes["doceanic_da"]
     mild_da = regimes["mild_da"]
     humid_da = regimes["humid_da"]
     semiarid_da = regimes["semiarid_da"]
@@ -188,7 +200,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & humid_da
-        & continental_da
+        & wcontinental_da
         & ((avg_mean < 6) | (warmest_month_avg_mean < 20))
         & ((summer_precip >= winter_precip) | (driest_month_precip >= 40)),
         "Hemiboreal Continental",
@@ -198,7 +210,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & humid_da
-        & continental_da
+        & wcontinental_da
         & (coldest_month_avg_mean < 0)
         & (avg_mean >= 6)
         & (warmest_month_avg_mean >= 20)
@@ -211,7 +223,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
         midlat_da
         & humid_da
         & (coldest_month_avg_mean < 4)
-        & (continental_da | (warmest_month_avg_mean >= 22))
+        & dcontinental_da
         & (winter_precip > summer_precip)
         & (driest_month_precip < 40),
         "Dry Summer Continental",
@@ -232,9 +244,8 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & humid_da
-        & oceanic_da
+        & doceanic_da
         & (coldest_month_avg_mean < 4)
-        & (warmest_month_avg_mean < 22)
         & (winter_precip > summer_precip)
         & (driest_month_precip < 40)
         & pole_of_32,
@@ -245,9 +256,8 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & humid_da
-        & oceanic_da
+        & woceanic_da
         & (coldest_month_avg_mean < 4)
-        & (warmest_month_avg_mean < 22)
         & (
             (summer_precip >= winter_precip)
             | (driest_month_precip >= 40)
@@ -304,7 +314,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & semiarid_da
-        & (warmest_month_avg_mean - coldest_month_avg_mean >= 18)
+        & dcontinental_da
         & (coldest_month_avg_mean < 8),
         "Variable Semi-Arid",
         cls,
@@ -313,7 +323,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         (midlat_da | tropical_da)
         & semiarid_da
-        & (warmest_month_avg_mean - coldest_month_avg_mean < 18)
+        & doceanic_da
         & (warmest_month_avg_mean < 26),
         "Moderated Semi-Arid",
         cls,
@@ -330,7 +340,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         midlat_da
         & arid_da
-        & (warmest_month_avg_mean - coldest_month_avg_mean >= 18)
+        & dcontinental_da
         & (coldest_month_avg_mean < 8),
         "Variable Desert",
         cls,
@@ -339,7 +349,7 @@ def classify(metrics: dict, regimes: dict, latbands: dict) -> xr.DataArray:
     cls = xr.where(
         (midlat_da | tropical_da)
         & arid_da
-        & (warmest_month_avg_mean - coldest_month_avg_mean < 18)
+        & doceanic_da
         & (warmest_month_avg_mean < 26),
         "Moderated Desert",
         cls,

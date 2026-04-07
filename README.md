@@ -170,11 +170,15 @@ The workflow is designed for gridded global or near-global datasets on a regular
 
 ## Data Availability
 
-Raw climate input files are not included in this repository.
-
 Users must provide their own NetCDF input files matching the required structure and variable names.
 
 This project was developed using high-resolution ERA5 reanalysis-based temperature and precipitation climatologies.
+
+## Sample data
+
+This repository includes small tracked sample datasets in `data/sample/` for Albany and Chicago, along with a matching MJO subset, so the pipeline can be tested quickly without downloading full ERA5 files.
+
+These sample files are intended only for demonstration and reproducibility checks.
 
 ## Usage 
 
