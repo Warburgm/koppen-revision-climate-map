@@ -2,149 +2,214 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.colors import ListedColormap, BoundaryNorm
+import regionmask
+
+from .palette import LABELS, CBAR_LABELS, CMAP, NORM, LEGEND_ITEMS
 
 
-def make_cmap(legend_items):
+def land_mask(class_int, land_resolution="110m"):
     """
-    Create a categorical colormap from legend_items.
+    Create a land mask using Natural Earth via regionmask.
 
     Parameters
     ----------
-    legend_items : list[tuple[str, str]]
-        List of (label, color) pairs.
+    class_int : xr.DataArray
+        Numeric climate-class index DataArray with lat/lon coordinates.
+    land_resolution : {"110m", "50m", "10m"}
+        Natural Earth land-mask resolution.
 
     Returns
     -------
-    cmap : ListedColormap
-    norm : BoundaryNorm
-    colors : list[str]
+    xr.DataArray
+        Boolean mask that is True over land and False over ocean.
     """
-    colors = [color for _, color in legend_items]
-    cmap = ListedColormap(colors)
-    cmap.set_bad("white")
-    norm = BoundaryNorm(
-        boundaries=np.arange(len(colors) + 1),
-        ncolors=len(colors),
-    )
-    return cmap, norm, colors
+    if land_resolution == "110m":
+        land = regionmask.defined_regions.natural_earth_v5_0_0.land_110
+    elif land_resolution == "50m":
+        land = regionmask.defined_regions.natural_earth_v5_0_0.land_50
+    elif land_resolution == "10m":
+        land = regionmask.defined_regions.natural_earth_v5_0_0.land_10
+    else:
+        raise ValueError(
+            "land_resolution must be one of: '110m', '50m', or '10m'"
+        )
+
+    try:
+        mask = land.mask(
+            class_int["lon"],
+            class_int["lat"],
+            wrap_lon=True,
+        )
+    except TypeError:
+        mask = land.mask(
+            class_int["lon"],
+            class_int["lat"],
+        )
+
+    return mask.notnull()
 
 
-def prepare_lon_lat(da):
+def mask_to_land(class_int, land_resolution="110m"):
     """
-    Extract lon/lat 1D coordinates and corresponding 2D meshgrid.
+    Mask ocean grid cells from a numeric climate-class DataArray.
     """
-    lon = da.lon.values
-    lat = da.lat.values
-    lon_grid, lat_grid = np.meshgrid(lon, lat)
-    return lon, lat, lon_grid, lat_grid
+    mask = land_mask(class_int, land_resolution=land_resolution)
+    return class_int.where(mask)
 
 
-def plot_global_map(
-    classification_idx,
-    legend_items,
-    cbar_labels,
-    title="Köppen Revision Climate Types",
-    subtitle=None,
-    figsize=(14, 7),
+def quick_plot(
+    class_int,
+    out=None,
+    title="Köppen Revision Climate Types (1991–2020 Averages)",
+    subtitle=(
+        "Based on 0.1° × 0.1° resolution ERA5 reanalysis "
+        "temperature and precipitation monthly means"
+    ),
+    labels=None,
+    cbar_labels=None,
+    cmap=None,
+    norm=None,
+    figsize=(27, 15),
     dpi=900,
-    outfile=None,
-    coastline_lw=0.1,
-    borders_lw=0.1,
-    states_lw=0.1,
-    cbar_pad=0.02,
+    land_resolution="110m",
+    ocean_resolution="10m",
+    boundary_resolution="10m",
+    add_colorbar=True,
+    add_legend=False,
+    show=False,
 ):
     """
-    Plot a global categorical climate classification map.
+    Plot indexed climate classes on a global PlateCarree map.
 
     Parameters
     ----------
-    classification_idx : xr.DataArray
-        2D indexed classification field with dims (lat, lon).
-        Ocean / masked regions should be NaN.
-    legend_items : list[tuple[str, str]]
-        List of (label, color) pairs in the same order as class indices.
-    cbar_labels : list[str]
-        Colorbar labels in class-index order.
+    class_int : xr.DataArray
+        Numeric climate-class index DataArray, usually produced by
+        classification_to_index(...).
+    out : str or Path, optional
+        Output filename. If None, the figure is not saved.
     title : str
-        Plot title.
-    subtitle : str or None
-        Optional subtitle / caption placed below the map.
+        Main figure title.
+    subtitle : str
+        Text placed below the map.
+    labels : list[str], optional
+        Climate-class labels.
+    cbar_labels : list[str], optional
+        Labels used on the colorbar.
+    cmap : matplotlib.colors.Colormap, optional
+        Listed colormap.
+    norm : matplotlib.colors.BoundaryNorm, optional
+        Boundary norm for discrete classes.
     figsize : tuple
         Figure size.
     dpi : int
-        Output DPI if saved.
-    outfile : str or None
-        Path to save figure. If None, figure is not saved.
+        Output resolution when saving.
+    land_resolution : {"110m", "50m", "10m"}
+        Resolution used for regionmask land masking.
+    ocean_resolution : {"110m", "50m", "10m"}
+        Resolution used for the white ocean overlay.
+    boundary_resolution : {"110m", "50m", "10m"}
+        Resolution used for coastlines and borders.
+    add_colorbar : bool
+        Whether to add a vertical colorbar.
+    add_legend : bool
+        Whether to add a patch legend instead of/in addition to colorbar.
+    show : bool
+        Whether to call plt.show().
+
+    Returns
+    -------
+    fig, ax
+        Matplotlib figure and axes.
     """
-    if classification_idx.ndim != 2:
-        raise ValueError(
-            f"classification_idx must be 2D (lat, lon); got dims={classification_idx.dims}"
-        )
+    if labels is None:
+        labels = LABELS
 
-    _, _, lon_grid, lat_grid = prepare_lon_lat(classification_idx)
-    cmap, norm, _ = make_cmap(legend_items)
+    if cbar_labels is None:
+        cbar_labels = CBAR_LABELS
 
-    fig, ax = plt.subplots(
-        figsize=figsize,
-        subplot_kw={"projection": ccrs.PlateCarree()},
-    )
+    if cmap is None:
+        cmap = CMAP
 
-    mesh = ax.pcolormesh(
-        lon_grid,
-        lat_grid,
-        classification_idx,
+    if norm is None:
+        norm = NORM
+
+    masked = mask_to_land(class_int, land_resolution=land_resolution)
+
+    fig = plt.figure(figsize=figsize, facecolor="white")
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_facecolor("white")
+
+    im = ax.pcolormesh(
+        masked["lon"],
+        masked["lat"],
+        masked,
         cmap=cmap,
         norm=norm,
         shading="auto",
         transform=ccrs.PlateCarree(),
+        zorder=1,
     )
 
-    ax.set_facecolor("white")
-    ax.add_feature(cfeature.COASTLINE, linewidth=coastline_lw)
-    ax.add_feature(cfeature.BORDERS, linewidth=borders_lw)
-    ax.add_feature(cfeature.STATES, linewidth=states_lw)
+    ocean = cfeature.NaturalEarthFeature(
+        "physical",
+        "ocean",
+        ocean_resolution,
+        facecolor="white",
+        edgecolor="none",
+    )
+    ax.add_feature(ocean, zorder=2)
 
-    if subtitle is not None:
-        ax.text(
-            0.5,
-            -0.12,
-            subtitle,
-            transform=ax.transAxes,
-            ha="center",
-            va="top",
-            fontsize=10,
-            style="italic",
+    ax.add_feature(
+        cfeature.COASTLINE.with_scale(boundary_resolution),
+        linewidth=0.2,
+        zorder=3,
+    )
+    ax.add_feature(
+        cfeature.BORDERS.with_scale(boundary_resolution),
+        linewidth=0.2,
+        zorder=3,
+    )
+
+    ax.set_global()
+
+    ax.text(
+        0.5,
+        -0.12,
+        subtitle,
+        transform=ax.transAxes,
+        ha="center",
+        va="top",
+        fontsize=10,
+        style="italic",
+    )
+
+    if add_colorbar:
+        cbar = plt.colorbar(
+            im,
+            ax=ax,
+            orientation="vertical",
+            pad=0.02,
+            ticks=np.arange(len(labels)),
+        )
+        cbar.set_ticklabels(cbar_labels)
+
+    if add_legend:
+        ax.legend(
+            handles=LEGEND_ITEMS,
+            loc="lower center",
+            bbox_to_anchor=(0.5, -0.25),
+            ncol=4,
+            frameon=False,
+            fontsize=9,
         )
 
-    cbar = plt.colorbar(mesh, ax=ax, orientation="vertical", pad=cbar_pad)
-    cbar.set_ticks(np.arange(len(cbar_labels)) + 0.5)
-    cbar.set_ticklabels(cbar_labels)
+    ax.set_title(title, fontsize=16, pad=12)
 
-    plt.title(title)
-    plt.tight_layout()
+    if out is not None:
+        fig.savefig(out, dpi=dpi, bbox_inches="tight")
 
-    if outfile is not None:
-        plt.savefig(outfile, dpi=dpi, bbox_inches="tight")
+    if show:
+        plt.show()
 
-    return fig, ax, mesh
-
-
-def quick_plot(
-    classification_idx,
-    legend_items,
-    cbar_labels,
-    outfile="global_climate_types_1991_2020.png",
-):
-    """
-    Convenience wrapper using your current preferred defaults.
-    """
-    return plot_global_map(
-        classification_idx=classification_idx,
-        legend_items=legend_items,
-        cbar_labels=cbar_labels,
-        title="Köppen Revision Climate Types (1991–2020 Averages)",
-        subtitle="Based on 0.1°× 0.1° resolution ERA5 reanalysis temperature and precipitation monthly means",
-        outfile=outfile,
-        dpi=900,
-    )
+    return fig, ax
