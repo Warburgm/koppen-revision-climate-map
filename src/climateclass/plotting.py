@@ -11,17 +11,7 @@ def land_mask(class_int, land_resolution="110m"):
     """
     Create a land mask using Natural Earth via regionmask.
 
-    Parameters
-    ----------
-    class_int : xr.DataArray
-        Numeric climate-class index DataArray with lat/lon coordinates.
-    land_resolution : {"110m", "50m", "10m"}
-        Natural Earth land-mask resolution.
-
-    Returns
-    -------
-    xr.DataArray
-        Boolean mask that is True over land and False over ocean.
+    For ERA5 data already on -180 to 180 longitude, do not use wrap_lon=True.
     """
     if land_resolution == "110m":
         land = regionmask.defined_regions.natural_earth_v5_0_0.land_110
@@ -34,17 +24,10 @@ def land_mask(class_int, land_resolution="110m"):
             "land_resolution must be one of: '110m', '50m', or '10m'"
         )
 
-    try:
-        mask = land.mask(
-            class_int["lon"],
-            class_int["lat"],
-            wrap_lon=True,
-        )
-    except TypeError:
-        mask = land.mask(
-            class_int["lon"],
-            class_int["lat"],
-        )
+    mask = land.mask(
+        class_int["lon"],
+        class_int["lat"],
+    )
 
     return mask.notnull()
 
