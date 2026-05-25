@@ -202,7 +202,7 @@ def build_classification(
         & (coldest_month_avg_mean < 4)
         & (winter_precip > summer_precip)
         & (driest_month < 30),
-        "Dry Summer Suboceanic",
+        "Dry Summer Montane",
         cls,
     )
 
@@ -213,7 +213,7 @@ def build_classification(
         & (coldest_month_avg_mean < 4)
         & (warm_months < 3)
         & ((summer_precip >= winter_precip) | (driest_month >= 30)),
-        "Humid Suboceanic",
+        "Suboceanic",
         cls,
     )
 
@@ -224,7 +224,7 @@ def build_classification(
         & (winter_precip > summer_precip)
         & (driest_month < 30)
         & pole_of_32,
-        "Dry Summer Oceanic",
+        "Dry Summer West Coast",
         cls,
     )
 

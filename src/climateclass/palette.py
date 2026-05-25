@@ -12,10 +12,10 @@ LABELS = [
     "Humid Continental",
     "Dry Summer Continental",
     "Monsoonal Continental",
-    "Dry Summer Suboceanic",
-    "Humid Suboceanic",
-    "Dry Summer Oceanic",
-    "Humid Oceanic",
+    "Dry Summer Montane",
+    "Suboceanic",
+    "Dry Summer West Coast",
+    "Oceanic",
     "Dry Summer Subtropical",
     "Humid Subtropical",
     "Monsoonal Subtropical",
@@ -38,10 +38,10 @@ COLORS = [
     "#84B07D",  # Humid Continental
     "#B18EED",  # Dry Summer Continental
     "#90EE90",  # Monsoonal Continental
-    "#5316B8",  # Dry Summer Suboceanic
-    "#030764",  # Humid Suboceanic
-    "#BABF24",  # Dry Summer Oceanic
-    "#48E8B0",  # Humid Oceanic
+    "#5316B8",  # Dry Summer Montane
+    "#030764",  # Suboceanic
+    "#BABF24",  # Dry Summer West Coast
+    "#48E8B0",  # Oceanic
     "#FFFF14",  # Dry Summer Subtropical
     "#15B01A",  # Humid Subtropical
     "#CDFC65",  # Monsoonal Subtropical
