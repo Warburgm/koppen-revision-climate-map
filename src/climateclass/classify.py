@@ -93,8 +93,8 @@ def build_classification(
 
     continental = (warmest_month_avg_mean - coldest_month_avg_mean) > 20
     oceanic = (warmest_month_avg_mean - coldest_month_avg_mean) <= 20
-    acontinental = (warmest_month_avg_mean - coldest_month_avg_mean) > 18
-    aoceanic = (warmest_month_avg_mean - coldest_month_avg_mean) <= 18
+    acontinental = (warmest_month_avg_mean - coldest_month_avg_mean) > 20
+    aoceanic = (warmest_month_avg_mean - coldest_month_avg_mean) <= 20
 
     hypercontinental = (
         (coldest_month_avg_mean < 0)
@@ -133,208 +133,166 @@ def build_classification(
         ),
     )
 
-    humid = annual_precip >= precip_threshold
-    semiarid = (precip_threshold > annual_precip) & (
-        annual_precip >= 0.4 * precip_threshold
-    )
-    arid = annual_precip < 0.4 * precip_threshold
-
-    winter_wet = humid & ((driest_month * 5) > wettest_month)
-    winter_dry = humid & (
-        ((precip_threshold * 1.5) >= annual_precip)
-        | ((driest_month * 5) <= wettest_month)
-    )
+    # Aridity classes
+    humid = (annual_precip >= precip_threshold)
+    semiarid = ((precip_threshold > annual_precip) & (annual_precip >= 0.4 * precip_threshold))
+    arid = (annual_precip < 0.4 * precip_threshold)
+    winter_wet = (((driest_month * 4) > (wettest_month)) | (summer_precip >= winter_precip))
+    winter_dry = (summer_precip >= winter_precip) & ((driest_month * 4) <= (wettest_month))
+    summer_dry = (winter_precip >= summer_precip) & ((driest_month * 4) <= (wettest_month))
 
     cls = xr.full_like(avg_mean, "Unknown", dtype=object)
 
-    cls = xr.where(polar & (cool_months == 0), "Ice Cap", cls)
-    cls = xr.where(polar & (cool_months >= 1), "Tundra", cls)
+    cls = xr.where(polar & (cool_months == 0), "Cold, Ice Cap", cls)
+    cls = xr.where(polar & (cool_months >= 1), "Cold, Tundra", cls)
 
-    cls = xr.where(subpolar & continental, "Cold Taiga", cls)
-    cls = xr.where(subpolar & oceanic, "Cool Taiga", cls)
+    cls = xr.where(subpolar & continental, "Cold, Taiga, Severe Winter", cls)
+    cls = xr.where(subpolar & oceanic, "Cold, Taiga, Moderated Winter", cls)
 
     cls = xr.where(
-        midlat
-        & humid
-        & continental
-        & ((avg_mean < 6) | (warm_months < 3))
-        & ((summer_precip >= winter_precip) | (driest_month >= 40)),
-        "Hemiboreal Continental",
+        midlat & humid & continental
+        & (warm_months < 3)
+        & ((driest_month >= 40) | (summer_precip >= winter_precip)),
+        "Continental, Short Wet Summer",
         cls,
     )
 
     cls = xr.where(
-        midlat
-        & humid
-        & (avg_mean >= 6)
+        midlat & humid & continental
         & (warm_months >= 3)
-        & (((summer_precip >= winter_precip) | (driest_month >= 40)) | winter_wet),
-        "Humid Continental",
+        & ((driest_month >= 40) | (winter_wet)),
+        "Continental, Long Summer, No Dry Season",
         cls,
     )
 
     cls = xr.where(
-        midlat
-        & humid
-        & (avg_mean >= 6)
+        midlat & humid
         & (warm_months >= 3)
         & (summer_precip >= winter_precip)
         & winter_dry,
-        "Monsoonal Continental",
+        "Continental, Long Summer, Dry Winter",
         cls,
     )
 
     cls = xr.where(
-        midlat
-        & humid
-        & (coldest_month_avg_mean < 4)
+        midlat & humid
         & continental
+        & (winter_precip >= summer_precip)
+        & (driest_month < 40),
+        "Continental, Dry Summer",
+        cls,
+    )
+
+    cls = xr.where(
+        midlat & humid & oceanic & ((driest_month >= 40) | (winter_wet)),
+        "Oceanic, No Dry Season",
+        cls,
+    )
+
+    cls = xr.where(
+        midlat & humid & oceanic & (summer_dry) & (driest_month < 40),
+        "Oceanic, Dry Summer",
+        cls,
+    )
+
+    cls = xr.where(
+        midlat & humid & oceanic & (summer_precip >= winter_precip)
+        & winter_dry,
+        "Oceanic, Dry Winter",
+        cls,
+    )
+
+    cls = xr.where(
+        humid & mild
         & (winter_precip > summer_precip)
         & (driest_month < 40),
-        "Dry Summer Continental",
+        "Subtropical, Dry Summer",
         cls,
     )
 
     cls = xr.where(
-        midlat
-        & humid
-        & oceanic
-        & (coldest_month_avg_mean < 4)
-        & (winter_precip > summer_precip)
-        & (driest_month < 30),
-        "Dry Summer Montane",
+        mild & humid 
+        & ((driest_month >= 40) | ((summer_precip >= winter_precip) & (winter_wet))),
+        "Subtropical, No Dry Season",
         cls,
     )
 
     cls = xr.where(
-        midlat
-        & humid
-        & oceanic
-        & (coldest_month_avg_mean < 4)
-        & (warm_months < 3)
-        & ((summer_precip >= winter_precip) | (driest_month >= 30)),
-        "Suboceanic",
-        cls,
-    )
-
-    cls = xr.where(
-        humid
-        & midlat
-        & (coldest_month_avg_mean > 4)
-        & (winter_precip > summer_precip)
-        & (driest_month < 30)
-        & pole_of_32,
-        "Dry Summer West Coast",
-        cls,
-    )
-
-    cls = xr.where(
-        humid
-        & midlat
-        & (coldest_month_avg_mean > 4)
-        & ((summer_precip >= winter_precip) | (driest_month >= 30) | eq_of_32),
-        "Humid Oceanic",
-        cls,
-    )
-
-    cls = xr.where(
-        humid
-        & mild
-        & (winter_precip > summer_precip)
-        & (driest_month < 40)
-        & pole_of_32,
-        "Dry Summer Subtropical",
-        cls,
-    )
-
-    cls = xr.where(
-        mild & humid & (driest_month >= 40),
-        "Humid Subtropical",
-        cls,
-    )
-
-    cls = xr.where(
-        mild
-        & humid
-        & ((summer_precip >= winter_precip) | eq_of_32)
+        mild & humid
+        & (summer_precip >= winter_precip)
+        & (winter_dry)
         & (driest_month < 40),
-        "Monsoonal Subtropical",
+        "Subtropical, Dry Winter",
         cls,
     )
 
     cls = xr.where(
-        (mild_months >= 4)
-        & (avg_mean >= 0)
+        (mild_months >= 4) & (avg_mean >= 0)
         & semiarid
         & acontinental
         & (coldest_month_avg_mean < 6),
-        "Variable Semi-Arid",
+        "Dry, Variable Steppe",
         cls,
     )
 
     cls = xr.where(
-        (mild_months >= 4)
-        & (avg_mean >= 0)
+        (mild_months >= 4) & (avg_mean >= 0) 
         & semiarid
         & aoceanic
-        & (warmest_month_avg_mean < 24),
-        "Moderated Semi-Arid",
+        & (warmest_month_avg_mean < 26),
+        "Dry, Moderated Steppe",
         cls,
     )
 
     cls = xr.where(
         semiarid
         & (coldest_month_avg_mean >= 6)
-        & (warmest_month_avg_mean >= 24),
-        "Warm Semi-Arid",
+        & (warmest_month_avg_mean >= 26),
+        "Dry, Hot Steppe",
         cls,
     )
 
     cls = xr.where(
-        (mild_months >= 4)
-        & (avg_mean >= 0)
+        (mild_months >= 4) & (avg_mean >= 0) 
         & arid
         & acontinental
         & (coldest_month_avg_mean < 6),
-        "Variable Arid",
+        "Dry, Variable Desert",
         cls,
     )
 
     cls = xr.where(
-        (mild_months >= 4)
-        & (avg_mean >= 0)
+        (mild_months >= 4) & (avg_mean >= 0)
         & arid
         & aoceanic
-        & (warmest_month_avg_mean < 24),
-        "Moderated Arid",
+        & (warmest_month_avg_mean < 26),
+        "Dry, Moderated Desert",
         cls,
     )
 
     cls = xr.where(
         arid
         & (coldest_month_avg_mean >= 6)
-        & (warmest_month_avg_mean >= 24),
-        "Warm Arid",
+        & (warmest_month_avg_mean >= 26),
+        "Dry, Hot Desert",
         cls,
     )
 
     cls = xr.where(
-        tropical
-        & humid
+        tropical & humid
         & ((annual_precip < 1250) | (driest_month < 50)),
-        "Monsoonal Tropical",
+        "Tropical, Wet & Dry Season",
         cls,
     )
 
     cls = xr.where(
-        tropical
-        & humid
+        tropical & humid
         & (annual_precip >= 1250)
         & (driest_month >= 50),
-        "Humid Tropical",
+        "Tropical, No Dry Season",
         cls,
     )
-
+    
     cls.name = "climate_class"
     return cls
 

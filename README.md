@@ -76,11 +76,11 @@ Aridity thresholds are vectorized functions of mean temperature, with regime-dep
 
 The classification currently includes **22 distinct climate types**, grouped broadly as:
 
-- Polar & Subpolar  
-- Wet Summer Temperate  
-- Dry Summer Temperate  
-- Semi-Arid & Desert (temperate and tropical)  
-- Tropical (monsoon savanna, rainforest)
+- Cold (Polar & Subpolar)
+- Dry (Temperate, Subtropical and Tropical)  
+- Continental (Temperate)  
+- Mild (Temperate and Subtropical)  
+- Tropical (Monsoon savanna, Rainforest)
 
 Each grid cell is assigned exactly one class, with logical safeguards to prevent physically inconsistent combinations.
 

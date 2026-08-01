@@ -45,17 +45,20 @@ def main():
         time_slice=("1991-01-01", "2020-12-31"),
     )
 
-    classification_idx = classification_to_index(classification, LABELS)
+    class_int = classification_to_index(
+        classification,
+        labels=LABELS,
+    )
 
     quick_plot(
-        class_int=classification_idx,
-        out=args.out,
-        title="Köppen Revision Climate Types (1991–2020 Averages)",
-        subtitle=(
-            "Based on 0.1° × 0.1° resolution ERA5 reanalysis "
-            "temperature and precipitation monthly means"
-        ),
-        show=True,
+    class_int=class_int,
+    out=args.out,
+    title="Köppen Revision Climate Types (1991–2020 Averages)",
+    subtitle=None,
+    add_colorbar=False,
+    add_flat_legend=False,
+    add_grouped_legend=True,
+    show=True,
     )
 
 
