@@ -102,8 +102,8 @@ def build_classification(
         & ((warmest_month_avg_mean - coldest_month_avg_mean) >= 26)
     )
 
-    polar = (grow_months < 3) | (mild_months == 0)
-    subpolar = (mild_months >= 1) & (grow_months >= 3) & (
+    polar = (grow_months < 3)
+    subpolar = (grow_months >= 3) & (
         (mild_months < 4) | (avg_mean < 0)
     )
     midlat = (
