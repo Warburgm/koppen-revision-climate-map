@@ -184,13 +184,13 @@ def build_classification(
     )
 
     cls = xr.where(
-        midlat & humid & oceanic & ((driest_month >= 40) | (winter_wet)),
+        midlat & humid & oceanic & ((driest_month >= 30) | (winter_wet)),
         "Oceanic, No Dry Season",
         cls,
     )
 
     cls = xr.where(
-        midlat & humid & oceanic & (summer_dry) & (driest_month < 40),
+        midlat & humid & oceanic & (summer_dry) & (driest_month < 30),
         "Oceanic, Dry Summer",
         cls,
     )
