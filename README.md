@@ -74,13 +74,13 @@ Aridity thresholds are vectorized functions of mean temperature, with regime-dep
 
 ## Climate Classes
 
-The classification currently includes **22 distinct climate types**, grouped broadly as:
+The classification currently includes **30 distinct climate types**, grouped broadly as:
 
 - Cold (Polar & Subpolar)
 - Dry (Temperate, Subtropical and Tropical)  
-- Continental (Temperate)  
-- Mild (Temperate and Subtropical)  
-- Tropical (Monsoon savanna, Rainforest)
+- Temperate (At least one significant wet season)  
+- Subtropical (At least one significant wet season)  
+- Tropical (Monsoon Savanna, Rainforest)
 
 Each grid cell is assigned exactly one class, with logical safeguards to prevent physically inconsistent combinations.
 
